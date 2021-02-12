@@ -1,7 +1,7 @@
 import express from "express";
 import config from "./config";
 import { getDbClient } from "./loader/databse";
-import userRouter from "./user/user-service";
+import userRouter from "./user/user-controller";
 
 async function startServer() {
   const app = express();

@@ -1,19 +1,25 @@
-import * as yup from "yup";
+import { Request, Response, Router } from "express";
+import { validateRequest } from "./user-validator";
 import { userSchema } from "./user-schema";
-import { getDbClient } from "../loader/databse";
+import { createUser } from "./user-service";
+const userRouter = Router();
 
-type User = yup.InferType<typeof userSchema>;
-
-export async function createUser(user: User) {
-  try {
-    let newUser = (await userSchema.cast(user)) || user;
-    //😌 require db client
-    const dbClient = await getDbClient();
-    return await dbClient.db().collection("user").insertOne(newUser);
-  } catch (e) {
-    return {
-      errorName: e.name,
-      error: e,
-    };
+userRouter.post(
+  "/user",
+  validateRequest(userSchema, "body"),
+  async (req: Request, res: Response) => {
+    try {
+      if (req.body) {
+        const user = await createUser(req.body);
+        res.status(201).send(user);
+      }
+    } catch (e) {
+      res.status(500).send({
+        errorName: e.name,
+        error: e,
+      });
+    }
   }
-}
+);
+
+export default userRouter;
